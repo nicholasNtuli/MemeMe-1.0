@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate,  UIPickerViewDelegate, UIPickerViewDataSource {
     
     @IBOutlet weak var imagePickerView: UIImageView!
     @IBOutlet weak var albumBbutton: UIBarButtonItem!
@@ -17,9 +17,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet weak var toolBar: UIToolbar!
     @IBOutlet weak var shareButton: UIBarButtonItem!
     
-    @IBOutlet weak var fontPickerView: UIPickerView!
-    
     var memes: [Meme] = []
+    var fontPicker: UIPickerView?
+    var fontNames: [String] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +43,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         topTextField.delegate = self
         bottomTextField.delegate = self
         
+        fontNames = UIFont.familyNames.sorted()
+        
+        // Initialize the font picker and set its delegate and data source
+        fontPicker = UIPickerView()
+        fontPicker?.delegate = self
+        fontPicker?.dataSource = self
+        
+        // Assign the font picker as the input view for both text fields
+        topTextField.inputView = fontPicker
+        bottomTextField.inputView = fontPicker
         
         shareButton.isEnabled = false
     }
@@ -64,6 +74,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
+        imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
@@ -72,23 +83,33 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .camera
+        imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
     @IBAction func shareMeme(_ sender: Any) {
-        if let memedImage = generateMemedImage() {
-            let activityViewController = UIActivityViewController(activityItems: [memedImage], applicationActivities: nil)
-            // Present the activity view controller
-            present(activityViewController, animated: true, completion: nil)
-        } else {
+        guard let memedImage = generateMemedImage() else {
             print("Error generating memed image.")
+            return
         }
+        
+        let activityViewController = UIActivityViewController(activityItems: [memedImage], applicationActivities: nil)
+        
+        activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
+            guard completed else {
+                print("User canceled the sharing.")
+                return
+            }
+        }
+        
+        present(activityViewController, animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[.originalImage] as? UIImage {
-            imagePickerView.image = image
-            navigationItem.rightBarButtonItem?.isEnabled = true
+        if let editedImage = info[.editedImage] as? UIImage {
+            imagePickerView.image = editedImage
+        } else if let originalImage = info[.originalImage] as? UIImage {
+            imagePickerView.image = originalImage
         }
         
         picker.dismiss(animated: true, completion: nil)
@@ -144,8 +165,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     func generateMemedImage() -> UIImage? {
         hideBars(true)
-        
-        // Capture the image context with the proper size
         UIGraphicsBeginImageContextWithOptions(view.frame.size, false, UIScreen.main.scale)
         view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
         let memedImage = UIGraphicsGetImageFromCurrentImageContext()
@@ -156,7 +175,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return memedImage
     }
     
-    func save() {
+    func save(meme: Meme) {
         if let memedImage = generateMemedImage() {
             let meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, originalImage: imagePickerView.image!, memedImage: memedImage)
             UIImageWriteToSavedPhotosAlbum(meme.memedImage, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
@@ -175,5 +194,36 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     func checkEnableShareButton() {
         shareButton.isEnabled = imagePickerView.image != nil && !topTextField.text!.isEmpty && !bottomTextField.text!.isEmpty
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return fontNames.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return fontNames[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        let selectedFontName = fontNames[row]
+        // Apply the selected font to the text fields
+        topTextField.font = UIFont(name: selectedFontName, size: 40)
+        bottomTextField.font = UIFont(name: selectedFontName, size: 40)
+    }
+    
+    func updateTextFieldsFont(fontName: String) {
+        let memeTextAttributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key.strokeColor: UIColor.black,
+            NSAttributedString.Key.foregroundColor: UIColor.white,
+            NSAttributedString.Key.font: UIFont(name: fontName, size: 40)!,
+            NSAttributedString.Key.strokeWidth: -3.0
+        ]
+        
+        topTextField.defaultTextAttributes = memeTextAttributes
+        bottomTextField.defaultTextAttributes = memeTextAttributes
     }
 }

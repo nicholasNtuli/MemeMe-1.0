@@ -54,26 +54,19 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="allCharacters"/>
                             </textField>
-                            <pickerView contentMode="scaleToFill" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="BbY-ns-UcG">
-                                <rect key="frame" x="0.0" y="530" width="414" height="162"/>
-                            </pickerView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="fTg-Ho-0gs" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="09B-wC-s7P"/>
-                            <constraint firstItem="BbY-ns-UcG" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="3Dl-JM-Wtu"/>
                             <constraint firstItem="QJy-YP-scM" firstAttribute="top" secondItem="8ov-q4-GtW" secondAttribute="bottom" constant="17" id="AG9-SM-Hnu"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="yqk-0E-Dec" secondAttribute="trailing" id="Bva-Za-8lw"/>
-                            <constraint firstItem="BbY-ns-UcG" firstAttribute="top" secondItem="QJy-YP-scM" secondAttribute="bottom" constant="3" id="Dxy-Fi-ivw"/>
                             <constraint firstItem="8ov-q4-GtW" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="RyL-qx-vcK"/>
                             <constraint firstItem="yqk-0E-Dec" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="UDZ-49-ldq"/>
                             <constraint firstItem="8ov-q4-GtW" firstAttribute="top" secondItem="fTg-Ho-0gs" secondAttribute="bottom" constant="19" id="Vt4-0X-nn2"/>
                             <constraint firstItem="QJy-YP-scM" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="aQi-fP-1cR"/>
-                            <constraint firstItem="BbY-ns-UcG" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="b1B-iI-iFq"/>
                             <constraint firstItem="8ov-q4-GtW" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="jVf-7a-FgQ"/>
                             <constraint firstItem="yqk-0E-Dec" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="vhT-Wr-ANO"/>
-                            <constraint firstItem="yqk-0E-Dec" firstAttribute="top" secondItem="BbY-ns-UcG" secondAttribute="bottom" id="ynZ-Tg-JCY"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="e6q-36-JjE">
@@ -87,7 +80,6 @@
                         <outlet property="albumBbutton" destination="PUt-yQ-XrO" id="UD7-QO-OSM"/>
                         <outlet property="bottomTextField" destination="QJy-YP-scM" id="7Fa-Sg-xma"/>
                         <outlet property="cameraButton" destination="4Ns-RL-Bh5" id="XgM-89-Ym5"/>
-                        <outlet property="fontPickerView" destination="BbY-ns-UcG" id="k0D-ot-hLL"/>
                         <outlet property="imagePickerView" destination="8ov-q4-GtW" id="XNU-vM-Tyu"/>
                         <outlet property="shareButton" destination="UL9-l1-y1G" id="0Mc-1b-GCx"/>
                         <outlet property="toolBar" destination="yqk-0E-Dec" id="kOE-rz-OoG"/>
