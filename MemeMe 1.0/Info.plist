@@ -21,5 +21,9 @@
 			</array>
 		</dict>
 	</dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Need access to the camera to take photos and create memes.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Need access to the photo library to select photos and create memes.</string>
 </dict>
 </plist>
