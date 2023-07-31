@@ -42,11 +42,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-#if targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
         cameraButton.isEnabled = false
-#else
+        #else
         cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
-#endif
+        #endif
         
         subscribeToKeyboardNotification()
         checkEnableShareButton()
@@ -61,13 +61,22 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         textField.text = defaultText
         textField.textAlignment = .center
         
-        let memeTextAttributes: [NSAttributedString.Key: Any] = [
-            .strokeColor: UIColor.black,
-            .foregroundColor: UIColor.white,
-            .font: UIFont(name: "Impact", size: 40)!,
-            .strokeWidth: -3.0
-        ]
+        // Update the existing attributes, or create a new dictionary if it's nil
+        var memeTextAttributes = textField.defaultTextAttributes
+        if memeTextAttributes == nil {
+            memeTextAttributes = [NSAttributedString.Key: Any]()
+        }
         
+        // Update the stroke and foreground colors
+        memeTextAttributes[NSAttributedString.Key.strokeColor] = UIColor.black
+        memeTextAttributes[NSAttributedString.Key.foregroundColor] = UIColor.white
+        
+        // Set the font and stroke width (assuming "Impact" font is available)
+        let font = UIFont(name: "Impact", size: 40)!
+        memeTextAttributes[NSAttributedString.Key.font] = font
+        memeTextAttributes[NSAttributedString.Key.strokeWidth] = -3.0
+        
+        // Assign the updated attributes to the text field
         textField.defaultTextAttributes = memeTextAttributes
         textField.delegate = self
     }
