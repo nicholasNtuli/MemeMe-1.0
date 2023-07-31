@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MemeEditorViewController.swift
 //  MemeMe 1.0
 //
 //  Created by Sihle Ntuli on 2023/07/30.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate,  UIPickerViewDelegate, UIPickerViewDataSource {
+class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate,  UIPickerViewDelegate, UIPickerViewDataSource {
     
     @IBOutlet weak var imagePickerView: UIImageView!
     @IBOutlet weak var albumBbutton: UIBarButtonItem!
@@ -24,33 +24,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        topTextField.text = "TOP"
-        bottomTextField.text = "BOTTOM"
-        
-        topTextField.textAlignment = .center
-        bottomTextField.textAlignment = .center
-        
-        let memeTextAttributes: [NSAttributedString.Key: Any] = [
-            NSAttributedString.Key.strokeColor: UIColor.black,
-            NSAttributedString.Key.foregroundColor: UIColor.white,
-            NSAttributedString.Key.font: UIFont(name: "Impact", size: 40)!,
-            NSAttributedString.Key.strokeWidth: -3.0
-        ]
-        
-        topTextField.defaultTextAttributes = memeTextAttributes
-        bottomTextField.defaultTextAttributes = memeTextAttributes
-        
-        topTextField.delegate = self
-        bottomTextField.delegate = self
+        prepareTextField(topTextField, defaultText: "TOP")
+        prepareTextField(bottomTextField, defaultText: "BOTTOM")
         
         fontNames = UIFont.familyNames.sorted()
         
-        // Initialize the font picker and set its delegate and data source
         fontPicker = UIPickerView()
         fontPicker?.delegate = self
         fontPicker?.dataSource = self
         
-        // Assign the font picker as the input view for both text fields
         topTextField.inputView = fontPicker
         bottomTextField.inputView = fontPicker
         
@@ -59,9 +41,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera)
-        subscribeToKeyboardNotification()
         
+#if targetEnvironment(simulator)
+        cameraButton.isEnabled = false
+#else
+        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
+#endif
+        
+        subscribeToKeyboardNotification()
         checkEnableShareButton()
     }
     
@@ -70,36 +57,55 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         unsubscribeFromKeyboardNotifications()
     }
     
+    func prepareTextField(_ textField: UITextField, defaultText: String) {
+        textField.text = defaultText
+        textField.textAlignment = .center
+        
+        let memeTextAttributes: [NSAttributedString.Key: Any] = [
+            .strokeColor: UIColor.black,
+            .foregroundColor: UIColor.white,
+            .font: UIFont(name: "Impact", size: 40)!,
+            .strokeWidth: -3.0
+        ]
+        
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.delegate = self
+    }
+    
     @IBAction func pickAnImageFromAlbum(_ sender: Any) {
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
-        imagePicker.sourceType = .photoLibrary
-        imagePicker.allowsEditing = true
-        present(imagePicker, animated: true, completion: nil)
+        pickImage(sourceType: .photoLibrary)
     }
     
     @IBAction func pickAnImageFromCamera(_ sender: Any) {
-        
+        pickImage(sourceType: .camera)
+    }
+    
+    func pickImage(sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
-        imagePicker.sourceType = .camera
+        imagePicker.sourceType = sourceType
         imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
     @IBAction func shareMeme(_ sender: Any) {
         guard let memedImage = generateMemedImage() else {
-            print("Error generating memed image.")
             return
         }
         
+        let meme = Meme(topText: topTextField.text!,
+                        bottomText: bottomTextField.text!,
+                        originalImage: imagePickerView.image!,
+                        memedImage: memedImage)
+        
         let activityViewController = UIActivityViewController(activityItems: [memedImage], applicationActivities: nil)
         
-        activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, activityError in
+        activityViewController.completionWithItemsHandler = { [weak self] activityType, completed, returnedItems, activityError in
             guard completed else {
-                print("User canceled the sharing.")
                 return
             }
+            
+            self?.save(meme: meme)
         }
         
         present(activityViewController, animated: true, completion: nil)
@@ -135,7 +141,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
-        view.frame.origin.y = -getKeyboardHeight(notification: notification)
+        if bottomTextField.isFirstResponder {
+            view.frame.origin.y = -getKeyboardHeight(notification: notification)
+        }
     }
     
     @objc func keyboardWillHide(_ notification: Notification) {
