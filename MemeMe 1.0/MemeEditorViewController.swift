@@ -12,31 +12,21 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var imagePickerView: UIImageView!
     @IBOutlet weak var albumBbutton: UIBarButtonItem!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
+    @IBOutlet weak var fontButton: UIBarButtonItem!
     @IBOutlet weak var topTextField: UITextField!
     @IBOutlet weak var bottomTextField: UITextField!
     @IBOutlet weak var toolBar: UIToolbar!
     @IBOutlet weak var shareButton: UIBarButtonItem!
     
-    var memes: [Meme] = []
     var fontPicker: UIPickerView?
-    var fontNames: [String] = []
+    var fontNames: [String] = UIFont.familyNames.sorted()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         prepareTextField(topTextField, defaultText: "TOP")
         prepareTextField(bottomTextField, defaultText: "BOTTOM")
-        
-        fontNames = UIFont.familyNames.sorted()
-        
-        fontPicker = UIPickerView()
-        fontPicker?.delegate = self
-        fontPicker?.dataSource = self
-        
-        topTextField.inputView = fontPicker
-        bottomTextField.inputView = fontPicker
-        
         shareButton.isEnabled = false
+        setupFontPickerView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,36 +47,59 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         unsubscribeFromKeyboardNotifications()
     }
     
+    func setupFontPickerView() {
+        // Font picker setup
+        fontPicker = UIPickerView()
+        fontPicker?.delegate = self
+        fontPicker?.dataSource = self
+        
+        // Font picker toolbar setup
+        let fontPickerToolbar = UIToolbar()
+        fontPickerToolbar.barStyle = .default
+        fontPickerToolbar.isTranslucent = true
+        fontPickerToolbar.sizeToFit()
+        
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(fontPickerDoneButtonTapped))
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        fontPickerToolbar.setItems([spaceButton, doneButton], animated: false)
+        fontPickerToolbar.isUserInteractionEnabled = true
+        
+        // Set the font picker toolbar as the input accessory view for the text fields
+        topTextField.inputAccessoryView = fontPickerToolbar
+        bottomTextField.inputAccessoryView = fontPickerToolbar
+        
+        // Set the input view of the text fields to nil initially
+        topTextField.inputView = nil
+        bottomTextField.inputView = nil
+    }
+
     func prepareTextField(_ textField: UITextField, defaultText: String) {
         textField.text = defaultText
         textField.textAlignment = .center
         
-        // Update the existing attributes, or create a new dictionary if it's nil
         var memeTextAttributes = textField.defaultTextAttributes
         if memeTextAttributes == nil {
             memeTextAttributes = [NSAttributedString.Key: Any]()
         }
         
-        // Update the stroke and foreground colors
         memeTextAttributes[NSAttributedString.Key.strokeColor] = UIColor.black
         memeTextAttributes[NSAttributedString.Key.foregroundColor] = UIColor.white
         
-        // Set the font and stroke width (assuming "Impact" font is available)
         let font = UIFont(name: "Impact", size: 40)!
         memeTextAttributes[NSAttributedString.Key.font] = font
         memeTextAttributes[NSAttributedString.Key.strokeWidth] = -3.0
         
-        // Assign the updated attributes to the text field
         textField.defaultTextAttributes = memeTextAttributes
         textField.delegate = self
     }
     
-    @IBAction func pickAnImageFromAlbum(_ sender: Any) {
-        pickImage(sourceType: .photoLibrary)
-    }
-    
-    @IBAction func pickAnImageFromCamera(_ sender: Any) {
-        pickImage(sourceType: .camera)
+    @IBAction func selectToolBarButton(_ sender: Any) {
+        if let button = sender as? UIButton, button.tag == 1 {
+            fontButtonTapped(sender)
+        } else {
+            handleIfImageButtonOrCameraButtonIsTapped(sender)
+        }
     }
     
     func pickImage(sourceType: UIImagePickerController.SourceType) {
@@ -95,6 +108,42 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         imagePicker.sourceType = sourceType
         imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func handleIfImageButtonOrCameraButtonIsTapped(_ sender: Any) {
+        if let button = sender as? UIBarButtonItem {
+            if button == albumBbutton {
+                // Album button pressed
+                pickImage(sourceType: .photoLibrary)
+            } else if button == cameraButton {
+                // Camera button pressed
+                pickImage(sourceType: .camera)
+            }
+        }
+    }
+    
+    @IBAction func fontButtonTapped(_ sender: Any) {
+        if topTextField.isFirstResponder || bottomTextField.isFirstResponder {
+            view.endEditing(true)
+        }
+        
+        if topTextField.inputView == nil {
+            topTextField.inputView = fontPicker
+            bottomTextField.inputView = fontPicker
+            topTextField.becomeFirstResponder()
+        } else {
+            topTextField.inputView = nil
+            bottomTextField.inputView = nil
+        }
+    }
+    
+    @objc func fontPickerDoneButtonTapped() {
+        topTextField.resignFirstResponder()
+        bottomTextField.resignFirstResponder()
+        
+        // Set the input view of the text fields back to nil
+        topTextField.inputView = nil
+        bottomTextField.inputView = nil
     }
     
     @IBAction func shareMeme(_ sender: Any) {
@@ -227,20 +276,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         let selectedFontName = fontNames[row]
-        // Apply the selected font to the text fields
         topTextField.font = UIFont(name: selectedFontName, size: 40)
         bottomTextField.font = UIFont(name: selectedFontName, size: 40)
     }
-    
-    func updateTextFieldsFont(fontName: String) {
-        let memeTextAttributes: [NSAttributedString.Key: Any] = [
-            NSAttributedString.Key.strokeColor: UIColor.black,
-            NSAttributedString.Key.foregroundColor: UIColor.white,
-            NSAttributedString.Key.font: UIFont(name: fontName, size: 40)!,
-            NSAttributedString.Key.strokeWidth: -3.0
-        ]
-        
-        topTextField.defaultTextAttributes = memeTextAttributes
-        bottomTextField.defaultTextAttributes = memeTextAttributes
-    }
+
 }

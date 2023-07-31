@@ -22,14 +22,19 @@
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" verticalHuggingPriority="249" translatesAutoresizingMaskIntoConstraints="NO" id="yqk-0E-Dec">
                                 <rect key="frame" x="0.0" y="692" width="414" height="44"/>
                                 <items>
-                                    <barButtonItem title="Album" id="PUt-yQ-XrO">
+                                    <barButtonItem tag="1" title="Album" id="PUt-yQ-XrO">
                                         <connections>
-                                            <action selector="pickAnImageFromAlbum:" destination="BYZ-38-t0r" id="tMu-Fl-Wlb"/>
+                                            <action selector="selectToolBarButton:" destination="BYZ-38-t0r" id="UYu-to-IX0"/>
                                         </connections>
                                     </barButtonItem>
-                                    <barButtonItem title="Camera" id="4Ns-RL-Bh5">
+                                    <barButtonItem tag="2" title="Camera" id="4Ns-RL-Bh5">
                                         <connections>
-                                            <action selector="pickAnImageFromCamera:" destination="BYZ-38-t0r" id="yUa-4y-Uve"/>
+                                            <action selector="selectToolBarButton:" destination="BYZ-38-t0r" id="rDf-ef-UbT"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem tag="3" title="Font" id="VSp-GF-tAp">
+                                        <connections>
+                                            <action selector="fontButtonTapped:" destination="BYZ-38-t0r" id="XTl-G6-oCZ"/>
                                         </connections>
                                     </barButtonItem>
                                 </items>
@@ -77,6 +82,7 @@
                         <outlet property="albumBbutton" destination="PUt-yQ-XrO" id="UD7-QO-OSM"/>
                         <outlet property="bottomTextField" destination="QJy-YP-scM" id="7Fa-Sg-xma"/>
                         <outlet property="cameraButton" destination="4Ns-RL-Bh5" id="XgM-89-Ym5"/>
+                        <outlet property="fontButton" destination="VSp-GF-tAp" id="lru-GM-GPl"/>
                         <outlet property="imagePickerView" destination="8ov-q4-GtW" id="XNU-vM-Tyu"/>
                         <outlet property="shareButton" destination="UL9-l1-y1G" id="0Mc-1b-GCx"/>
                         <outlet property="toolBar" destination="yqk-0E-Dec" id="kOE-rz-OoG"/>
